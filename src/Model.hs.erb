@@ -1,8 +1,8 @@
-{-# LANGUAGE DeriveGeneric, TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Model where
 
-import Data.Char
 import Data.Word
+import Control.Monad (liftM)
 
 import Data.Serialize
 import Data.Serialize.Get()
@@ -11,13 +11,9 @@ import qualified Data.Text
 import qualified Data.Text.Encoding
 import Data.ByteString(ByteString)
 import qualified Data.ByteString
-import Data.ByteString.Internal(w2c)
 import Data.Sequence(Seq)
-import qualified Data.Sequence
 import qualified Data.ByteString.UTF8
 import Test.QuickCheck
-import Data.DeriveTH
-import Debug.Trace
 import GHC.Generics (Generic)
 
 <% @model_names.each do |model_name| %>
@@ -49,15 +45,15 @@ instance Serialize Model where
   get = do
     headChar <- get :: Get Word8
     case headChar of
-      0   -> getText >>= (\x -> return (MText x) )
-      1   -> get >>= (\x -> return (MByteString x) )
-      2   -> get >>= (\x -> return (MList x) )
-      3   -> get >>= (\x -> return (MSeq x) )
-      4   -> get >>= (\x -> return (MInteger x) )
-      5   -> get >>= (\x -> return (MRational x) )
+      0   -> liftM MText getText
+      1   -> liftM MByteString get
+      2   -> liftM MList get
+      3   -> liftM MSeq get
+      4   -> liftM MInteger get
+      5   -> liftM MRational get
       255 -> return MNothing
       77  -> get >>= (\bs -> case Data.ByteString.UTF8.toString bs of<% @model_names.each do |model_name| %>
-                               "<%= model_name.gsub('.','') %>" -> (get :: Get <%= model_name %>.<%= model_name.split('.')[-1] %>) >>= (\m -> return (<%= model_name.gsub('.','') %> m))<% end %>
+                               "<%= model_name.gsub('.','') %>" -> (get :: Get <%= model_name %>.<%= model_name.split('.')[-1] %>) >>= return . <%= model_name.gsub('.','') %><% end %>
                                _ -> return MNothing)
       _ -> return MNothing -- NOTE: is there a way to force a fail?
 
@@ -66,6 +62,6 @@ getText = do
   return (Data.Text.Encoding.decodeUtf8 bs)
 
 instance Arbitrary Data.Text.Text where
-  arbitrary = arbitrary >>= (\x -> return (Data.Text.pack x))
+  arbitrary = liftM Data.Text.pack arbitrary
 instance Arbitrary ByteString where
-  arbitrary = arbitrary >>= (\x -> return (Data.ByteString.pack x))
+  arbitrary = liftM Data.ByteString.pack arbitrary

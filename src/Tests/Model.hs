@@ -23,12 +23,12 @@ recode x = decode (encode (x :: Model))
 recode_eq x = recode x == Right x
 recode_ x = recode x @?= Right x
 
-arbilist1 t x = t (map (\y -> MInteger y) (x :: [Integer]))
+arbilist1 t x = t (map MInteger (x :: [Integer]))
 
 prop_serial_integer x = recode (MInteger x) == Right (MInteger x)
 prop_serial_rational x = recode (MRational x) == Right (MRational x)
 prop_serial_list x = let v = (arbilist1 MList x); in recode v == Right v
-prop_serial_seq x = let v = (arbilist1 (\y -> MSeq (S.fromList y)) x); in recode v == Right v
+prop_serial_seq x = let v = (arbilist1 (MSeq . S.fromList) x); in recode v == Right v
 prop_serial_bs x = recode (MByteString x) == Right (MByteString x)
 prop_serial_text x = recode (MText x) == Right (MText x)
 prop_serial_example x = recode_eq (ModelExample x)

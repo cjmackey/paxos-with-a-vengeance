@@ -65,18 +65,7 @@ getText = do
   bs <- get :: Get ByteString
   return (Data.Text.Encoding.decodeUtf8 bs)
 
-getModelName :: Get String
-getModelName = do
-  c <- get :: Get Word8
-  (if c == fromIntegral (ord '\n')
-   then return []
-   else getModelName >>= (\s -> return ((w2c c):s)))
-
 instance Arbitrary Data.Text.Text where
   arbitrary = arbitrary >>= (\x -> return (Data.Text.pack x))
 instance Arbitrary ByteString where
   arbitrary = arbitrary >>= (\x -> return (Data.ByteString.pack x))
-instance (Arbitrary a) => Arbitrary (Seq a) where
-  arbitrary = arbitrary >>= (\x -> return (Data.Sequence.fromList x))
-
-$(derive makeArbitrary ''Model)

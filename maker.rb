@@ -42,15 +42,29 @@ def build_models
       @model_paths << filename
     end
   end
-  puts @model_paths.inspect
   @model_names = @model_paths.map do |path|
-    pathlist = path.split(File::SEPARATOR) # File.split(path)
-    puts pathlist.inspect
+    pathlist = path.split(File::SEPARATOR)
     pathlist[1..-2].join('.') + '.' + pathlist[-1][0..-4]
   end
-  puts @model_names.inspect
   File.open(File.join('src','Model.hs'), 'w') do |f|
     erb = File.read(File.join('src','Model.hs.erb'))
+    f.write(ERB.new(erb).result())
+  end
+end
+
+def build_tests
+  @test_paths = []
+  Find.find(File.join('src','Tests')) do |filename|
+    if filename =~ /Tests?\.hs\z/
+      @test_paths << filename
+    end
+  end
+  @test_modules = @test_paths.map do |path|
+    pathlist = path.split(File::SEPARATOR)
+    pathlist[1..-2].join('.') + '.' + pathlist[-1][0..-4]
+  end
+  File.open(File.join('src','Tests.hs'), 'w') do |f|
+    erb = File.read(File.join('src','Tests.hs.erb'))
     f.write(ERB.new(erb).result())
   end
 end
@@ -64,6 +78,7 @@ end
 
 def build
   build_models
+  build_tests
   build_cabal
 end
 

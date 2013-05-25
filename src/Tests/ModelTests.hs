@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Tests.Model(testGroup) where
+module Tests.ModelTests(testGroup) where
 
 import Test.Framework.TH
 import Test.Framework.Providers.HUnit

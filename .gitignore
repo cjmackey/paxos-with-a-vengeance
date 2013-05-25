@@ -1,6 +1,7 @@
 dist
 cabal-dev
 src/Model.hs
+src/Tests.hs
 *.o
 *.hi
 *.chi

@@ -1,0 +1,42 @@
+module Model where
+
+import Data.Char()
+import Data.Word
+
+import Data.Serialize
+import Data.Serialize.Get()
+import Data.Serialize.Put()
+import qualified Data.Text
+import qualified Data.Text.Encoding
+import Data.ByteString(ByteString)
+import Data.Sequence(Seq)
+import qualified Data.ByteString.UTF8(fromString)
+
+<% @model_names.each do |model_name| %>
+import qualified <%= model_name %>
+<% end %>
+
+data Model = MText Data.Text.Text
+           | MByteString ByteString
+           | MList [Model]
+           | MSeq (Seq Model)
+           | MInteger Integer
+           | MRational Rational
+<% @model_names.each do |model_name| %>
+           | <%= model_name.gsub('.','') %> <%= model_name %>.<%= model_name.split('.')[-1] %>
+<% end %>
+     deriving (Eq, Ord, Show)
+
+instance Serialize Model where
+  put (MText t)       = put (0 :: Word8) >> put (Data.Text.Encoding.encodeUtf8 t)
+  put (MByteString t) = put (1 :: Word8) >> put t
+  put (MList t)       = put (2 :: Word8) >> put t
+  put (MSeq t)        = put (3 :: Word8) >> put t
+  put (MInteger t)    = put (4 :: Word8) >> put t
+  put (MRational t)   = put (5 :: Word8) >> put t
+<% @model_names.each do |model_name| %>
+  put (<%= model_name.gsub('.','') %> x) = do
+    putByteString (Data.ByteString.UTF8.fromString "<%= model_name.gsub('.','') %>\n")
+    put x
+<% end %>
+  get = error "todo"

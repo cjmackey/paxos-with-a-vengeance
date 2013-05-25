@@ -5,6 +5,8 @@ require 'date'
 require 'thread'
 #require 'open4'
 require 'rbconfig'
+require 'find'
+require 'erb'
 
 Dir.chdir(File.dirname(__FILE__))
 
@@ -33,6 +35,26 @@ def clean
   system('rm -r dist')
 end
 
+def build_models
+  @model_paths = []
+  Find.find(File.join('src','Model')) do |filename|
+    if filename =~ /\.hs\z/
+      @model_paths << filename
+    end
+  end
+  puts @model_paths.inspect
+  @model_names = @model_paths.map do |path|
+    pathlist = path.split(File::SEPARATOR) # File.split(path)
+    puts pathlist.inspect
+    pathlist[1..-2].join('.') + '.' + pathlist[-1][0..-4]
+  end
+  puts @model_names.inspect
+  File.open(File.join('src','Model.hs'), 'w') do |f|
+    erb = File.read(File.join('src','Model.hs.erb'))
+    f.write(ERB.new(erb).result())
+  end
+end
+
 def build_cabal
   system('cabal configure')
   raise "cabal configure failed!" unless $?.success?
@@ -41,6 +63,7 @@ def build_cabal
 end
 
 def build
+  build_models
   build_cabal
 end
 

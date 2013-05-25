@@ -5,6 +5,8 @@ module Main where
 import Test.Framework (defaultMain)
 import Test.Framework.TH
 
+import Model
+
 --import Tests.CTypeTests
 --import Tests.CClassTests
 --import Tests.ParserTests

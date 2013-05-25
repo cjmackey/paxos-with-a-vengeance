@@ -53,7 +53,7 @@ instance Serialize Model where
       5   -> liftM MRational get
       255 -> return MNothing
       77  -> get >>= (\bs -> case Data.ByteString.UTF8.toString bs of<% @model_names.each do |model_name| %>
-                               "<%= model_name.gsub('.','') %>" -> (get :: Get <%= model_name %>.<%= model_name.split('.')[-1] %>) >>= return . <%= model_name.gsub('.','') %><% end %>
+                               "<%= model_name.gsub('.','') %>" -> liftM <%= model_name.gsub('.','') %>  get<% end %>
                                _ -> return MNothing)
       _ -> return MNothing -- NOTE: is there a way to force a fail?
 

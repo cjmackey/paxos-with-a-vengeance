@@ -1,6 +1,7 @@
+{-# LANGUAGE DeriveGeneric, TemplateHaskell #-}
 module Model where
 
-import Data.Char()
+import Data.Char
 import Data.Word
 
 import Data.Serialize
@@ -9,34 +10,73 @@ import Data.Serialize.Put()
 import qualified Data.Text
 import qualified Data.Text.Encoding
 import Data.ByteString(ByteString)
+import qualified Data.ByteString
+import Data.ByteString.Internal(w2c)
 import Data.Sequence(Seq)
-import qualified Data.ByteString.UTF8(fromString)
+import qualified Data.Sequence
+import qualified Data.ByteString.UTF8
+import Test.QuickCheck
+import Data.DeriveTH
+import Debug.Trace
+import GHC.Generics (Generic)
 
 <% @model_names.each do |model_name| %>
 import qualified <%= model_name %>
 <% end %>
 
-data Model = MText Data.Text.Text
+data Model = MInteger Integer
            | MByteString ByteString
+           | MText Data.Text.Text
            | MList [Model]
            | MSeq (Seq Model)
-           | MInteger Integer
            | MRational Rational
-<% @model_names.each do |model_name| %>
-           | <%= model_name.gsub('.','') %> <%= model_name %>.<%= model_name.split('.')[-1] %>
-<% end %>
-     deriving (Eq, Ord, Show)
+           | MNothing<% @model_names.each do |model_name| %>
+           | <%= model_name.gsub('.','') %> <%= model_name %>.<%= model_name.split('.')[-1] %><% end %>
+     deriving (Eq, Ord, Show, Generic)
 
 instance Serialize Model where
-  put (MText t)       = put (0 :: Word8) >> put (Data.Text.Encoding.encodeUtf8 t)
+  put (MText t)       = put (0 :: Word8) >> put (Data.Text.Encoding.encodeUtf8 t :: ByteString)
   put (MByteString t) = put (1 :: Word8) >> put t
   put (MList t)       = put (2 :: Word8) >> put t
   put (MSeq t)        = put (3 :: Word8) >> put t
   put (MInteger t)    = put (4 :: Word8) >> put t
   put (MRational t)   = put (5 :: Word8) >> put t
-<% @model_names.each do |model_name| %>
+  put MNothing        = put (255 :: Word8)<% @model_names.each do |model_name| %>
   put (<%= model_name.gsub('.','') %> x) = do
-    putByteString (Data.ByteString.UTF8.fromString "<%= model_name.gsub('.','') %>\n")
-    put x
-<% end %>
-  get = error "todo"
+    put (77 :: Word8)
+    put (Data.ByteString.UTF8.fromString "<%= model_name.gsub('.','') %>")
+    put x<% end %>
+  get = do
+    headChar <- get :: Get Word8
+    case headChar of
+      0   -> getText >>= (\x -> return (MText x) )
+      1   -> get >>= (\x -> return (MByteString x) )
+      2   -> get >>= (\x -> return (MList x) )
+      3   -> get >>= (\x -> return (MSeq x) )
+      4   -> get >>= (\x -> return (MInteger x) )
+      5   -> get >>= (\x -> return (MRational x) )
+      255 -> return MNothing
+      77  -> get >>= (\bs -> case Data.ByteString.UTF8.toString bs of<% @model_names.each do |model_name| %>
+                               "<%= model_name.gsub('.','') %>" -> (get :: Get <%= model_name %>.<%= model_name.split('.')[-1] %>) >>= (\m -> return (<%= model_name.gsub('.','') %> m))<% end %>
+                               _ -> return MNothing)
+      _ -> return MNothing -- NOTE: is there a way to force a fail?
+
+getText = do
+  bs <- get :: Get ByteString
+  return (Data.Text.Encoding.decodeUtf8 bs)
+
+getModelName :: Get String
+getModelName = do
+  c <- get :: Get Word8
+  (if c == fromIntegral (ord '\n')
+   then return []
+   else getModelName >>= (\s -> return ((w2c c):s)))
+
+instance Arbitrary Data.Text.Text where
+  arbitrary = arbitrary >>= (\x -> return (Data.Text.pack x))
+instance Arbitrary ByteString where
+  arbitrary = arbitrary >>= (\x -> return (Data.ByteString.pack x))
+instance (Arbitrary a) => Arbitrary (Seq a) where
+  arbitrary = arbitrary >>= (\x -> return (Data.Sequence.fromList x))
+
+$(derive makeArbitrary ''Model)

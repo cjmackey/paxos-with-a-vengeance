@@ -21,21 +21,32 @@ recode x = decode (encode (x :: ModelTree))
 recode_eq x = recode x == Right x
 recode_ x = recode x @?= Right x
 
+simpleModelTree = ModelTree (MInteger 0) (M.fromList [(T.pack "a", empty)])
 complexModelTree = (ModelTree (MText $ T.pack "lol") (M.fromList [(T.pack "asdf", ModelTree (MInteger 17) M.empty)]))
 
-case_serial_simple = recode_ (ModelTree MNothing M.empty)
+case_serial_simple = recode_ empty
 case_serial_complex = recode_ complexModelTree
 
 case_tree_path_string = toTreePath "/asdf/blah/hello" @?= map T.pack ["asdf","blah","hello"]
 case_tree_path_string2 = toTreePath "asdf/blah/hello" @?= map T.pack ["asdf","blah","hello"]
+case_tree_path_list = toTreePath ["a","b","c"] @?= toTreePath "a/b/c"
+case_tree_path_id = toTreePath [T.pack "a", T.pack "b"] @?= toTreePath "a/b"
 
 case_applyTreeMod_0 = applyTreeMod (treeMod "" (MInteger 5)) empty @?= ModelTree (MInteger 5) M.empty
 
 case_lookup_0 = lookup "" empty @?= Just empty
+case_lookup_0' = lookup' "" empty @?= MNothing
 case_lookup_1 = lookup "asdf" empty @?= Nothing
+case_lookup_1' = lookup' "asdf" empty @?= MNothing
 case_lookup_1_1 = lookup "" complexModelTree @?= Just complexModelTree
 case_lookup_1_1' = lookup' "" complexModelTree @?= (MText $ T.pack "lol")
 case_lookup_2 = lookup "asdf" complexModelTree @?= Just (ModelTree (MInteger 17) M.empty)
 case_lookup_3 = lookup "asdf/blah3" complexModelTree @?= Nothing
+
+case_insert_0 = insert "" (MInteger 23) empty @?= ModelTree (MInteger 23) M.empty
+case_insert_1 = insert "a" (MInteger 23) empty @?= ModelTree MNothing (M.fromList [(T.pack "a", ModelTree (MInteger 23) M.empty)])
+case_insert_2 = insert "a" (MInteger 1) simpleModelTree @?= ModelTree (MInteger 0) (M.fromList [(T.pack "a", ModelTree (MInteger 1) M.empty)])
+
+
 
 testGroup = $(testGroupGenerator)

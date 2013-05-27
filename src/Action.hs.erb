@@ -1,9 +1,14 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Action where
 
 import Model
 import Data.ModelTree
 import Control.Monad.Act
 import Data.Sequence
+import GHC.Generics (Generic)
+import Data.Serialize
+
 
 <% @action_names.each do |action_name| %>
 import qualified <%= action_name %>
@@ -18,3 +23,8 @@ act actionName _ = return $ Left ("no such action!? " ++ actionName)
 
 runAction :: String -> [Model] -> ModelTree -> Either String (Model, ModelTree, Seq TreeMod)
 runAction actionName args = runAct (act actionName args)
+
+data Command = Command String [Model]
+  deriving (Eq, Ord, Show, Generic)
+instance Serialize Command
+runCommand (Command s l) = runAction s l

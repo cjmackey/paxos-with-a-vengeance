@@ -17,6 +17,10 @@ import Data.ModelTree
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
-case_example_1 = runAction "Example" [] Data.ModelTree.empty @?= Right (MNothing, ModelTree MNothing (M.fromList [(T.pack "some", ModelTree MNothing (M.fromList [(T.pack "path", ModelTree (MInteger 42) M.empty)]))]), Data.Sequence.fromList [InsModel (toTreePath "some/path") (MInteger 42)])
+case_example_return = runAction "Action.Example" [] Data.ModelTree.empty @?= Right (MInteger 42, Data.ModelTree.empty, Data.Sequence.empty)
+
+case_example_write = runAction "Example" [MText (T.pack "write")] Data.ModelTree.empty @?= Right (MNothing, ModelTree MNothing (M.fromList [(T.pack "some", ModelTree MNothing (M.fromList [(T.pack "path", ModelTree (MInteger 42) M.empty)]))]), Data.Sequence.fromList [InsModel (toTreePath "some/path") (MInteger 42)])
+
+prop_example_error s = runAction "Example" [MText (T.pack ("error! " ++ s))] Data.ModelTree.empty == Left ("error! " ++ s)
 
 testGroup = $(testGroupGenerator)

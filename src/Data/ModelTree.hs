@@ -39,6 +39,16 @@ applyTreeMod (InsModel (p0:p) m) (ModelTree m0 children) =
       child' = applyTreeMod (InsModel p m) child
       children' = M.insert p0 child' children
   in ModelTree m0 children'
+applyTreeMod (Del []) x = x
+applyTreeMod (Del [p]) (ModelTree m children) = ModelTree m (M.delete p children)
+applyTreeMod (Del (p0:p)) (ModelTree m children) = ModelTree m (M.adjust (applyTreeMod (Del p)) p0 children)
+applyTreeMod (Copy source target) mt = maybe mt (\node -> applyTreeMod (InsTree target node) mt) (lookup source mt)
+applyTreeMod (InsTree [] n) mt = n
+applyTreeMod (InsTree (p0:p) n) (ModelTree m0 children) =
+  let child = fromMaybe empty $ M.lookup p0 children
+      child' = applyTreeMod (InsTree p n) child
+      children' = M.insert p0 child' children
+  in ModelTree m0 children'
 
 applyTreeMods :: [TreeMod] -> ModelTree -> ModelTree
 applyTreeMods l mt = foldl (flip applyTreeMod) mt l

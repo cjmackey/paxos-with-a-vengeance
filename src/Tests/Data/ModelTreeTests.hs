@@ -35,7 +35,7 @@ case_tree_path_id = toTreePath [T.pack "a", T.pack "b"] @?= toTreePath "a/b"
 case_applyTreeMod_0 = applyTreeMod (InsModel [] (MInteger 5)) empty @?= ModelTree (MInteger 5) M.empty
 
 case_lookup_0 = lookup "" empty @?= Just empty
-case_lookup_0' = lookupModel "" empty @?= MNothing
+prop_lookup_0' s = lookupModel (s::[String]) empty == MNothing
 case_lookup_1 = lookup "asdf" empty @?= Nothing
 case_lookup_1' = lookupModel "asdf" empty @?= MNothing
 case_lookup_1_1 = lookup "" complexModelTree @?= Just complexModelTree

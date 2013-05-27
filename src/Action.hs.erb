@@ -17,4 +17,4 @@ act "<%= action_name.split('.')[1..-1].join('.') %>" args = <%= action_name %>.a
 act actionName _ = return $ Left ("no such action!? " ++ actionName)
 
 runAction :: String -> [Model] -> ModelTree -> Either String (Model, ModelTree, Seq TreeMod)
-runAction actionName args mt0 = runAct (act actionName args) mt0
+runAction actionName args = runAct (act actionName args)

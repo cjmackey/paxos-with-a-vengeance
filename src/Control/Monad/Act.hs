@@ -2,10 +2,10 @@ module Control.Monad.Act (Act, nodeExists, children, stat, read, write, delete, 
 
 import Prelude hiding (read, mod, lookup)
 
-import qualified Data.Map as M
+--import qualified Data.Map as M
 import Data.Map(Map)
 
-import qualified Data.Text as T
+--import qualified Data.Text as T
 import Data.Text(Text)
 
 import Data.ModelTree hiding (applyTreeMod)
@@ -24,11 +24,11 @@ data ActState = ActState ModelTree (Seq TreeMod)
   deriving (Eq, Ord, Show)
 tree (ActState mt _) = mt
 mods (ActState _ ml) = ml
-actState mt = ActState mt (Data.Sequence.empty)
+actState mt = ActState mt Data.Sequence.empty
 
 runAct :: Act (Either e o) -> ModelTree -> Either e (o, ModelTree, Seq TreeMod)
 runAct act mt =
-  let (o, as') = runState act (as)
+  let (o, as') = runState act as
       as = actState mt
   in case o of
        Right x -> Right (x, tree as', mods as')
@@ -71,7 +71,7 @@ delete p = do
 
 applyTreeMod mod = do
   as <- get
-  let as' = ActState (Data.ModelTree.applyTreeMod mod (tree as)) ((mods as) |> mod)
+  let as' = ActState (Data.ModelTree.applyTreeMod mod (tree as)) (mods as |> mod)
   put as'
   return ()
 

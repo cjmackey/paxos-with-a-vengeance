@@ -14,5 +14,10 @@ optest "write" = do
   write "some/path" (MInteger 42)
   return (Right MNothing)
 
+optest "copy" = do
+  write "some/path" (MInteger 42)
+  copy "some/path" "a/different/path"
+  return (Right MNothing)
+
 optest errorMsg = do
   return (Left errorMsg)

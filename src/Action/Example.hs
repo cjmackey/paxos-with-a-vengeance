@@ -1,5 +1,7 @@
 module Action.Example where
 
+import Prelude hiding (read)
+
 import Model
 import Control.Monad.Act
 
@@ -12,6 +14,15 @@ act _ = return (Right (MInteger 42))
 optest "write" = do
   write "some/path" (MInteger 42)
   return (Right MNothing)
+
+optest "read" = do
+  write "some/path" (MInteger 23)
+  x <- read "some/path"
+  return (Right x)
+
+optest "read_miss" = do
+  x <- read "some/path"
+  return (Right x)
 
 optest "copy" = do
   write "some/path" (MInteger 42)

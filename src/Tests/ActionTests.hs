@@ -32,6 +32,14 @@ case_example_copy_miss = runAction "Example" [MText (T.pack "copy_miss")] Data.M
                        @?= Right (MNothing, Data.ModelTree.empty,
                                   S.fromList [Copy (toTreePath "some/path") (toTreePath "a/different/path")])
 
+case_example_read = runAction "Example" [MText (T.pack "read")] Data.ModelTree.empty
+                       @?= Right (MInteger 23,
+                                  ModelTree MNothing (M.fromList [(T.pack "some", ModelTree MNothing (M.fromList [(T.pack "path", ModelTree (MInteger 23) M.empty)]))]),
+                                  S.fromList [InsModel (toTreePath "some/path") (MInteger 23)])
+
+case_example_read_miss = runAction "Example" [MText (T.pack "read_miss")] Data.ModelTree.empty
+                       @?= Right (MNothing, Data.ModelTree.empty, S.empty)
+
 prop_example_error s = runAction "Example" [MText (T.pack ("error! " ++ s))] Data.ModelTree.empty == Left ("error! " ++ s)
 
 testGroup = $(testGroupGenerator)

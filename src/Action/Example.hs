@@ -19,5 +19,9 @@ optest "copy" = do
   copy "some/path" "a/different/path"
   return (Right MNothing)
 
+optest "copy_miss" = do
+  copy "some/path" "a/different/path"
+  return (Right MNothing)
+
 optest errorMsg = do
   return (Left errorMsg)

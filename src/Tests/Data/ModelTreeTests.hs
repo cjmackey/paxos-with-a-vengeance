@@ -22,7 +22,7 @@ recode_eq x = recode x == Right x
 recode_ x = recode x @?= Right x
 
 simpleModelTree = ModelTree (MInteger 0) (M.fromList [(T.pack "a", empty)])
-complexModelTree = (ModelTree (MText $ T.pack "lol") (M.fromList [(T.pack "asdf", ModelTree (MInteger 17) M.empty)]))
+complexModelTree = ModelTree (MText $ T.pack "lol") (M.fromList [(T.pack "asdf", ModelTree (MInteger 17) M.empty)])
 
 case_serial_simple = recode_ empty
 case_serial_complex = recode_ complexModelTree

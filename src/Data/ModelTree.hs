@@ -11,6 +11,8 @@ import qualified Data.Text.Encoding
 import qualified Data.Map as M
 import Test.QuickCheck(Arbitrary)
 import GHC.Generics (Generic)
+import Data.Maybe(fromMaybe)
+
 import Model(Model(MNothing))
 
 data ModelTree = ModelTree Model (M.Map Text ModelTree)
@@ -35,16 +37,13 @@ insert p m = applyTreeMod (treeMod p m)
 applyTreeMod :: TreeMod -> ModelTree -> ModelTree
 applyTreeMod ([], m) (ModelTree _ children) = ModelTree m children
 applyTreeMod (p0:p, m) (ModelTree m0 children) =
-  let child = case M.lookup p0 children of
-                Just child0 -> child0
-                Nothing -> empty
+  let child = fromMaybe empty $ M.lookup p0 children
       child' = applyTreeMod (p, m) child
       children' = M.insert p0 child' children
   in ModelTree m0 children'
 
 applyTreeMods :: [TreeMod] -> ModelTree -> ModelTree
-applyTreeMods [] mt = mt
-applyTreeMods (x:xs) mt = applyTreeMods xs $ applyTreeMod x mt
+applyTreeMods l mt = foldl (flip applyTreeMod) mt l
 
 type TreePath = [Text]
 type TreeMod = (TreePath, Model)

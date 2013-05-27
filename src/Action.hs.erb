@@ -9,9 +9,14 @@ import qualified <%= action_name %>
 
 act :: String -> [Model] -> ModelTree -> Either String [TreeMod]
 <% @action_names.each do |action_name| %>
-act "<%= action_name %>" = <%= action_name %>.act
-act "<%= action_name.split('.')[1..-1].join('.') %>" = <%= action_name %>.act
+act "<%= action_name %>" args mt = <%= action_name %>.act args mt
+act "<%= action_name.split('.')[1..-1].join('.') %>" args mt = <%= action_name %>.act args mt
 <% end %>
+act actionName _ _ = Left ("no such action!? " ++ actionName)
 
-
+actDirectly :: String -> [Model] -> ModelTree -> Either String ModelTree
+actDirectly actionName args mt0 =
+  case act actionName args mt0 of
+    Left err -> Left err
+    Right treeMods -> Right $ applyTreeMods treeMods mt0
 

@@ -42,6 +42,10 @@ applyTreeMod (p0:p, m) (ModelTree m0 children) =
       children' = M.insert p0 child' children
   in ModelTree m0 children'
 
+applyTreeMods :: [TreeMod] -> ModelTree -> ModelTree
+applyTreeMods [] mt = mt
+applyTreeMods (x:xs) mt = applyTreeMods xs $ applyTreeMod x mt
+
 type TreePath = [Text]
 type TreeMod = (TreePath, Model)
 

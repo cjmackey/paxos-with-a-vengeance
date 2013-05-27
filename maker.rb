@@ -38,7 +38,7 @@ end
 def build_models
   @model_paths = []
   Find.find(File.join('src','Model')) do |filename|
-    if filename =~ /\.hs\z/
+    if filename =~ /\.hs\z/ && !filename.include?('#') && !filename.include?('~')
       @model_paths << filename
     end
   end
@@ -55,7 +55,7 @@ end
 def build_actions
   @action_paths = []
   Find.find(File.join('src','Action')) do |filename|
-    if filename =~ /\.hs\z/
+    if filename =~ /\.hs\z/ && !filename.include?('#') && !filename.include?('~')
       @action_paths << filename
     end
   end
@@ -72,7 +72,7 @@ end
 def build_tests
   @test_paths = []
   Find.find(File.join('src','Tests')) do |filename|
-    if filename =~ /Tests?\.hs\z/
+    if filename =~ /Tests?\.hs\z/ && !filename.include?('#') && !filename.include?('~')
       @test_paths << filename
     end
   end

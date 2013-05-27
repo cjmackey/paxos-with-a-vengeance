@@ -32,7 +32,7 @@ case_tree_path_string2 = toTreePath "asdf/blah/hello" @?= map T.pack ["asdf","bl
 case_tree_path_list = toTreePath ["a","b","c"] @?= toTreePath "a/b/c"
 case_tree_path_id = toTreePath [T.pack "a", T.pack "b"] @?= toTreePath "a/b"
 
-case_applyTreeMod_0 = applyTreeMod (treeMod "" (MInteger 5)) empty @?= ModelTree (MInteger 5) M.empty
+case_applyTreeMod_0 = applyTreeMod (InsModel [] (MInteger 5)) empty @?= ModelTree (MInteger 5) M.empty
 
 case_lookup_0 = lookup "" empty @?= Just empty
 case_lookup_0' = lookupModel "" empty @?= MNothing

@@ -18,6 +18,7 @@ import Model(Model(MNothing))
 data ModelTree = ModelTree Model (M.Map Text ModelTree)
     deriving (Eq, Ord, Show, Generic)
 empty = ModelTree MNothing M.empty
+mtChildren (ModelTree _ children) = children
 
 lookup :: (TreePathLike p) => p -> ModelTree -> Maybe ModelTree
 lookup p0 = l (toTreePath p0)
@@ -29,13 +30,13 @@ lookupModel p mt = case lookup p mt of
                  Just (ModelTree m _) -> m
                  Nothing -> MNothing
 insertModel :: (TreePathLike p) => p -> Model -> ModelTree -> ModelTree
-insertModel p m = applyTreeMod (treeMod p m)
+insertModel p m = applyTreeMod (InsModel (toTreePath p) m)
 
 applyTreeMod :: TreeMod -> ModelTree -> ModelTree
-applyTreeMod ([], m) (ModelTree _ children) = ModelTree m children
-applyTreeMod (p0:p, m) (ModelTree m0 children) =
+applyTreeMod (InsModel [] m) (ModelTree _ children) = ModelTree m children
+applyTreeMod (InsModel (p0:p) m) (ModelTree m0 children) =
   let child = fromMaybe empty $ M.lookup p0 children
-      child' = applyTreeMod (p, m) child
+      child' = applyTreeMod (InsModel p m) child
       children' = M.insert p0 child' children
   in ModelTree m0 children'
 
@@ -43,10 +44,11 @@ applyTreeMods :: [TreeMod] -> ModelTree -> ModelTree
 applyTreeMods l mt = foldl (flip applyTreeMod) mt l
 
 type TreePath = [Text]
-type TreeMod = (TreePath, Model)
-
-treeMod :: (TreePathLike p) => p -> Model -> TreeMod
-treeMod p m = (toTreePath p, m)
+data TreeMod = InsModel TreePath Model
+             | InsTree TreePath ModelTree
+             | Copy TreePath TreePath
+             | Del TreePath
+  deriving (Eq, Ord, Show)
 
 class TreePathLike a where
   toTreePath :: a -> TreePath

@@ -2,21 +2,19 @@ module Action where
 
 import Model
 import Data.ModelTree
+import Control.Monad.Act
+import Data.Sequence
 
 <% @action_names.each do |action_name| %>
 import qualified <%= action_name %>
 <% end %>
 
-act :: String -> [Model] -> ModelTree -> Either String [TreeMod]
+act :: String -> [Model] -> Act (Either String Model)
 <% @action_names.each do |action_name| %>
-act "<%= action_name %>" args mt = <%= action_name %>.act args mt
-act "<%= action_name.split('.')[1..-1].join('.') %>" args mt = <%= action_name %>.act args mt
+act "<%= action_name %>" args = <%= action_name %>.act args
+act "<%= action_name.split('.')[1..-1].join('.') %>" args = <%= action_name %>.act args
 <% end %>
-act actionName _ _ = Left ("no such action!? " ++ actionName)
+act actionName _ = return $ Left ("no such action!? " ++ actionName)
 
-actDirectly :: String -> [Model] -> ModelTree -> Either String ModelTree
-actDirectly actionName args mt0 =
-  case act actionName args mt0 of
-    Left err -> Left err
-    Right treeMods -> Right $ applyTreeMods treeMods mt0
-
+runAction :: String -> [Model] -> ModelTree -> Either String (Model, ModelTree, Seq TreeMod)
+runAction actionName args mt0 = runAct (act actionName args) mt0

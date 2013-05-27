@@ -1,9 +1,10 @@
 module Action.Example where
 
 import Model
-import Data.ModelTree(ModelTree, TreeMod, treeMod)
+import Control.Monad.Act
 
-act :: [Model] -> ModelTree -> Either String [TreeMod]
-act args mt0 = if length args == 1
-               then Left "omg args"
-               else Right [treeMod "some/path" (MInteger 42)]
+act :: [Model] -> Act (Either String Model)
+act args = do
+  write "some/path" (MInteger 42)
+  return (Right MNothing)
+

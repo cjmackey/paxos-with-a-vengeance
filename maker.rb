@@ -55,7 +55,7 @@ end
 def build_actions
   @action_paths = []
   Find.find(File.join('src','Action')) do |filename|
-    if filename =~ /\.hs\z/ && !filename.include?('#') && !filename.include?('~')
+    if filename =~ /\.hs\z/ && !filename.include?('#') && !filename.include?('~') && filename !~ /Act\.hs/
       @action_paths << filename
     end
   end

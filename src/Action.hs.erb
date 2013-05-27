@@ -1,0 +1,17 @@
+module Action where
+
+import Model
+import Data.ModelTree
+
+<% @action_names.each do |action_name| %>
+import qualified <%= action_name %>
+<% end %>
+
+act :: String -> [Model] -> ModelTree -> Either String [TreeMod]
+<% @action_names.each do |action_name| %>
+act "<%= action_name %>" = <%= action_name %>.act
+act "<%= action_name.split('.')[1..-1].join('.') %>" = <%= action_name %>.act
+<% end %>
+
+
+

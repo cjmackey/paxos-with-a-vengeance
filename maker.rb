@@ -52,6 +52,23 @@ def build_models
   end
 end
 
+def build_actions
+  @action_paths = []
+  Find.find(File.join('src','Action')) do |filename|
+    if filename =~ /\.hs\z/
+      @action_paths << filename
+    end
+  end
+  @action_names = @action_paths.map do |path|
+    pathlist = path.split(File::SEPARATOR)
+    pathlist[1..-2].join('.') + '.' + pathlist[-1][0..-4]
+  end
+  File.open(File.join('src','Action.hs'), 'w') do |f|
+    erb = File.read(File.join('src','Action.hs.erb'))
+    f.write(ERB.new(erb).result())
+  end
+end
+
 def build_tests
   @test_paths = []
   Find.find(File.join('src','Tests')) do |filename|
@@ -78,6 +95,7 @@ end
 
 def build
   build_models
+  build_actions
   build_tests
   build_cabal
 end

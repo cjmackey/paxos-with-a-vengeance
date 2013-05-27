@@ -23,16 +23,13 @@ lookup :: (TreePathLike p) => p -> ModelTree -> Maybe ModelTree
 lookup p0 = l (toTreePath p0)
   where l [] mt = Just mt
         l (h:p) (ModelTree _ children) = M.lookup h children >>= l p
---          case M.lookup h children of
---            Just child -> l p child
---            Nothing -> Nothing
 
-lookup' :: (TreePathLike p) => p -> ModelTree -> Model
-lookup' p mt = case lookup p mt of
+lookupModel :: (TreePathLike p) => p -> ModelTree -> Model
+lookupModel p mt = case lookup p mt of
                  Just (ModelTree m _) -> m
                  Nothing -> MNothing
-insert :: (TreePathLike p) => p -> Model -> ModelTree -> ModelTree
-insert p m = applyTreeMod (treeMod p m)
+insertModel :: (TreePathLike p) => p -> Model -> ModelTree -> ModelTree
+insertModel p m = applyTreeMod (treeMod p m)
 
 applyTreeMod :: TreeMod -> ModelTree -> ModelTree
 applyTreeMod ([], m) (ModelTree _ children) = ModelTree m children

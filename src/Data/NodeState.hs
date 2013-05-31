@@ -22,10 +22,15 @@ import Data.Serialize(decode, encode)
 
 data NodeState = SoloNodeState ModelTree
 
+data ClientDescription = ClientDescription Socket [MT.TreePath]
+
 empty :: NodeState
 empty = SoloNodeState MT.empty
 tree (SoloNodeState mt) = mt
 setTree mt (SoloNodeState _) = SoloNodeState mt
+
+-- NOTE: we'll probably want to move a lot of this out of here to other file(s)...
+
 
 run :: NodeState -> IO ()
 run ns = do

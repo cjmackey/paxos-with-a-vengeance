@@ -8,6 +8,7 @@ import Test.Framework.TH
 import Data.ModelTree()
 import Data.NodeState()
 import Model()
+import Network.CommandClient()
 
 <% @test_modules.each do |mod| %>
 import qualified <%= mod %><% end %>

@@ -1,6 +1,6 @@
 module Network.CommandClient where
 
-import Action
+import Data.Protocol.Command
 import Model
 import Data.Serialize
 

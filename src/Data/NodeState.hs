@@ -2,10 +2,8 @@ module Data.NodeState where
 
 import Data.ModelTree(ModelTree)
 import qualified Data.ModelTree as MT
-import Action(Command(Command), runCommand)
 import Model
-
--- import System.IO(hSetBuffering, BufferMode(NoBuffering))
+import Data.Protocol.Command(Command(Command), runCommand)
 
 import Control.Concurrent(forkIO)
 import Control.Concurrent.MVar(MVar, putMVar, newMVar, takeMVar)
@@ -27,6 +25,7 @@ data NodeState = SoloNodeState ModelTree
 empty :: NodeState
 empty = SoloNodeState MT.empty
 tree (SoloNodeState mt) = mt
+setTree mt (SoloNodeState _) = SoloNodeState mt
 
 run :: NodeState -> IO ()
 run ns = do
@@ -62,7 +61,7 @@ talk conn mns = do
   ns <- takeMVar mns
   let (ns', output) = case runCommand command (tree ns) of
                         Left err -> (ns, MText (T.pack err))
-                        Right (o, t', _) -> (SoloNodeState t', o)
+                        Right (o, t', _) -> (setTree t' ns, o)
   putMVar mns ns'
   let outputB = encode output
   sendAll conn (encode (fromIntegral (B.length outputB) :: Word64))
